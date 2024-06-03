@@ -9,7 +9,8 @@ stages:
   - release
   
 services:
-  - docker:dind  
+  -  name: docker:dind
+     alias: docker 
 docker-build:
   # Use the official docker image.
   image: docker:20.10.7
@@ -38,7 +39,7 @@ test-acc:
     - docker load < webapp.tar
     - docker run -d -p 80:80  --name webapp webapp 
     - apk add --no-cache  --update curl
-    - curl "http://docker:80" | grep -q "Dimension"
+    - curl "http://docker:80" | grep -q "HTML5"
 
 release image:
  stage: release
