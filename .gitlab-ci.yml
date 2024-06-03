@@ -33,8 +33,6 @@ docker-build:
 test-acc:
   image: docker:cli
   stage: test-acc
-  services:
-    - docker:dind
   script:
     - docker load < webapp.tar
     - docker run -d -p 80:80  --name webapp webapp 
@@ -44,8 +42,7 @@ test-acc:
 release image:
  stage: release
  image: docker:20.10.7
- services:
-    - docker:dind
+ 
  script:
    - docker load < webapp.tar
    - docker tag webapp "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}" 
