@@ -1,7 +1,7 @@
 variables:
   PROJECT_ID: "fifth-name-424318-q4"
   REGION: "us-west2"
-  IMAGE_NAME: "static_web_site"
+  IMAGE_NAME: "registry.gitlab.com/byub/projet-gitlab-eazytraining"
 
 stages:
   - docker-build
