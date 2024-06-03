@@ -35,7 +35,7 @@ test-acc:
   services:
     - docker:dind
   script:
-    - docker load < awebapp.tar
+    - docker load < webapp.tar
     - docker run -d -p 80:80  --name webapp webapp 
     - apk add --no-cache  --update curl
     - curl "http://docker:80" | grep -q "Dimension"
