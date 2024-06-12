@@ -8,11 +8,11 @@ This file explains the CI/CD pipeline configuration for deploying a web applicat
 ## Requirements
 To deploy on GCP I needed :
 - first to activate the **cloud run api and cloud build**
-![cloud run api](/images/cloud%20run.PNG)
+![cloud run api](/images/cloud%20run%20.PNG)
 - Then give some access to my **service account**
 ![service account](/images/auths.PNG)
 - I also needed to add a json key to use the api and declare it as an environment variable on gitlab
-![api json key](/images/json_key.PNG)
+![api json key](/images/key_json.PNG)
 
 ## Overview
 
