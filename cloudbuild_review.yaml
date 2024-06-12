@@ -1,0 +1,10 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['pull', '$_IMAGE_NAME:$_CI_COMMIT_SHORT_SHA']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', '$_IMAGE_NAME:$_CI_COMMIT_SHORT_SHA', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_CI_COMMIT_SHORT_SHA']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_CI_COMMIT_SHORT_SHA']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args: ['run', 'deploy', 'mon-service-review', '--image', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_CI_COMMIT_SHORT_SHA', '--region', 'us-west2', '--platform', 'managed', '--port', '80', '--quiet' , '--allow-unauthenticated']
