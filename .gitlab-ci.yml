@@ -1,7 +1,3 @@
-variables:
-  PROJECT_ID: "fifth-name-424318-q4"
-  REGION: "us-west2"
-  IMAGE_NAME: "registry.gitlab.com/byub/projet-gitlab-eazytraining"
 
 .gcp_login: &gcp_login
    - echo $GCLOUD_SERVICE_KEY  > /tmp/gcloud-service-key.json
@@ -18,6 +14,7 @@ stages:
   - test-acc
   - release
   - deploy_review
+  - stop_review
   - deploy_staging
   - test_staging
   - deploy_prod
@@ -29,7 +26,6 @@ services:
 
      
 docker-build:
-  # Use the official docker image.
   image: docker:20.10.7
   stage: docker-build
   services:
@@ -73,6 +69,8 @@ release image:
 deploy_review:
   stage: deploy_review
   image: google/cloud-sdk:slim
+  #only:
+   #- merge_requests
   
   script:
    - *gcp_login
@@ -86,6 +84,7 @@ deploy_review:
   environment:
     name: REVIEW/CI_COMMIT_SHORT_SHA
     url: $SERVICE_URL_REVIEW
+    on_stop: stop_review
 
 
 deploy_staging:
@@ -139,4 +138,19 @@ test_prod:
   script:
    - *app_test
   variables:
-    DOMAIN: $SERVICE_URL_STAGING          
+    DOMAIN: $SERVICE_URL_PROD      
+
+stop_review:
+  stage: stop_review
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: REVIEW/CI_COMMIT_SHORT_SHA
+    action: stop
+  only:
+    - merge_requests
+  script:
+  - *gcp_login 
+  - gcloud run services delete mon-service-review --region $REGION --quiet || true
+  when: manual
+  allow_failure: true       
