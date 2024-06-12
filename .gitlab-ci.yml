@@ -3,14 +3,31 @@ variables:
   REGION: "us-west2"
   IMAGE_NAME: "registry.gitlab.com/byub/projet-gitlab-eazytraining"
 
+.gcp_login: &gcp_login
+   - echo $GCLOUD_SERVICE_KEY  > /tmp/gcloud-service-key.json
+   - gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json
+   - gcloud config set project $PROJECT_ID   
+.app_test: &app_test
+   - apk add --no-cache  --update curl
+   - curl -s "$DOMAIN" -o temp.html
+   - grep -q "Dimension" temp.html
+   - rm temp.html
+
 stages:
   - docker-build
   - test-acc
   - release
-  
+  - deploy_review
+  - deploy_staging
+  - test_staging
+  - deploy_prod
+  - test_prod
 services:
   -  name: docker:dind
      alias: docker 
+
+
+     
 docker-build:
   # Use the official docker image.
   image: docker:20.10.7
@@ -52,4 +69,74 @@ release image:
    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}" 
+   
+deploy_review:
+  stage: deploy_review
+  image: google/cloud-sdk:slim
+  
+  script:
+   - *gcp_login
+   - gcloud builds submit  --config=cloudbuild_review.yaml --suppress-logs --substitutions _IMAGE_NAME=$IMAGE_NAME,_CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PROJECT_ID=$PROJECT_ID || true
+   - |
+      export SERVICE_URL_REVIEW=$(gcloud run services describe mon-service-review --region $REGION --format='value(status.url)')
+      echo "SERVICE_URL_REVIEW=$SERVICE_URL_REVIEW" >> deploy.env
+  artifacts:
+    reports:
+      dotenv: deploy.env     
+  environment:
+    name: REVIEW/CI_COMMIT_SHORT_SHA
+    url: $SERVICE_URL_REVIEW
 
+
+deploy_staging:
+  stage: deploy_staging
+  image: google/cloud-sdk:slim
+  
+  script:
+   - *gcp_login
+   - gcloud builds submit  --config=cloudbuild_staging.yaml --suppress-logs --substitutions _IMAGE_NAME=$IMAGE_NAME,_CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PROJECT_ID=$PROJECT_ID || true
+   - |
+      export SERVICE_URL_STAGING=$(gcloud run services describe mon-service-staging --region $REGION --format='value(status.url)')
+      echo "SERVICE_URL_STAGING=$SERVICE_URL_STAGING" >> deploy.env
+  artifacts:
+    reports:
+      dotenv: deploy.env     
+  environment:
+    name: STAGING/CI_COMMIT_SHORT_SHA
+    url: $SERVICE_URL_STAGING 
+
+
+test_staging:
+  stage: test_staging
+  image: alpine
+  script:
+   - *app_test
+  variables:
+    DOMAIN: $SERVICE_URL_STAGING
+
+
+deploy_prod:
+  stage: deploy_prod
+  image: google/cloud-sdk:slim
+  
+  script:
+   - *gcp_login
+   - gcloud builds submit  --config=cloudbuild_prod.yaml --suppress-logs --substitutions _IMAGE_NAME=$IMAGE_NAME,_CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PROJECT_ID=$PROJECT_ID || true
+   - |
+      export SERVICE_URL_PROD=$(gcloud run services describe mon-service-prod --region $REGION --format='value(status.url)')
+      echo "SERVICE_URL_PROD=$SERVICE_URL_PROD" >> deploy.env
+  artifacts:
+    reports:
+      dotenv: deploy.env     
+  environment:
+    name: PROD/CI_COMMIT_SHORT_SHA
+    url: $SERVICE_URL_PROD 
+
+
+test_prod:
+  stage: test_prod
+  image: alpine
+  script:
+   - *app_test
+  variables:
+    DOMAIN: $SERVICE_URL_STAGING          
