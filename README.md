@@ -5,7 +5,9 @@
 # CI/CD Pipeline for My Project
 
 This file explains the CI/CD pipeline configuration for deploying a web application using GitLab CI/CD and Google Cloud Platform (GCP). Below, you'll find a detailed explanation of each stage and the important commands used.
-
+## Requirements
+To deploy on GCP I needed first to activate the **cloud run api and cloud build**
+![Initial Image](/images/cloud%run)
 ## Overview
 
 The CI/CD pipeline consists of the following stages:
