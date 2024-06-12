@@ -6,8 +6,14 @@
 
 This file explains the CI/CD pipeline configuration for deploying a web application using GitLab CI/CD and Google Cloud Platform (GCP). Below, you'll find a detailed explanation of each stage and the important commands used.
 ## Requirements
-To deploy on GCP I needed first to activate the **cloud run api and cloud build**
-![Initial Image](/images/cloud%run)
+To deploy on GCP I needed :
+- first to activate the **cloud run api and cloud build**
+![cloud run api](/images/cloud%20run.PNG)
+- Then give some access to my **service account**
+![service account](/images/auths.PNG)
+- I also needed to add a json key to use the api and declare it as an environment variable on gitlab
+![api json key](/images/json_key.PNG)
+
 ## Overview
 
 The CI/CD pipeline consists of the following stages:
@@ -286,3 +292,16 @@ On all deployements .
 
 ### Running the pipeline 
 
+Now we run the Pipeline CI/CD :
+![Pipeline status](/images/passed.PNG)
+We see that everything is working 
+In this pipeline for a matter of testing i didnt use the **only: pull_requests** .
+
+We can also see the environments on Gitlab with the ulr of the deployements :
+![envs](/images/environements.PNG)
+
+On GCP we get the services created 
+![cloud run envs](/images/cloud%20run%20services.PNG)
+
+And if we click on a URL on any environment we get on the deployed app, let's click on the review URL :
+![cloud run api](/images/app_running_review.PNG)
