@@ -147,8 +147,8 @@ stop_review:
   environment:
     name: REVIEW/$CI_COMMIT_SHORT_SHA
     action: stop
-  only:
-    - merge_requests
+  #only:
+    #- merge_requests
   script:
   - *gcp_login 
   - gcloud run services delete mon-service-review --region $REGION --quiet || true
