@@ -69,8 +69,8 @@ release image:
 deploy_review:
   stage: deploy_review
   image: google/cloud-sdk:slim
-  #only:
-   #- merge_requests
+  only:
+   - merge_requests
   
   script:
    - *gcp_login
@@ -90,7 +90,8 @@ deploy_review:
 deploy_staging:
   stage: deploy_staging
   image: google/cloud-sdk:slim
-  
+   only:
+   - main
   script:
    - *gcp_login
    - gcloud builds submit  --config=cloudbuild_staging.yaml --suppress-logs --substitutions _IMAGE_NAME=$IMAGE_NAME,_CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PROJECT_ID=$PROJECT_ID || true
@@ -117,7 +118,8 @@ test_staging:
 deploy_prod:
   stage: deploy_prod
   image: google/cloud-sdk:slim
-  
+   only:
+   - main
   script:
    - *gcp_login
    - gcloud builds submit  --config=cloudbuild_prod.yaml --suppress-logs --substitutions _IMAGE_NAME=$IMAGE_NAME,_CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PROJECT_ID=$PROJECT_ID || true
@@ -147,8 +149,8 @@ stop_review:
   environment:
     name: REVIEW/$CI_COMMIT_SHORT_SHA
     action: stop
-  #only:
-    #- merge_requests
+  only:
+    - merge_requests
   script:
   - *gcp_login 
   - gcloud run services delete mon-service-review --region $REGION --quiet || true
