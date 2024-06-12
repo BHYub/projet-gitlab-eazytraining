@@ -82,7 +82,7 @@ deploy_review:
     reports:
       dotenv: deploy.env     
   environment:
-    name: REVIEW/CI_COMMIT_SHORT_SHA
+    name: REVIEW/$CI_COMMIT_SHORT_SHA
     url: $SERVICE_URL_REVIEW
     on_stop: stop_review
 
@@ -101,7 +101,7 @@ deploy_staging:
     reports:
       dotenv: deploy.env     
   environment:
-    name: STAGING/CI_COMMIT_SHORT_SHA
+    name: STAGING/$CI_COMMIT_SHORT_SHA
     url: $SERVICE_URL_STAGING 
 
 
@@ -128,7 +128,7 @@ deploy_prod:
     reports:
       dotenv: deploy.env     
   environment:
-    name: PROD/CI_COMMIT_SHORT_SHA
+    name: PROD/$CI_COMMIT_SHORT_SHA
     url: $SERVICE_URL_PROD 
 
 
@@ -145,7 +145,7 @@ stop_review:
   variables:
     GIT_STRATEGY: none
   environment:
-    name: REVIEW/CI_COMMIT_SHORT_SHA
+    name: REVIEW/$CI_COMMIT_SHORT_SHA
     action: stop
   only:
     - merge_requests
